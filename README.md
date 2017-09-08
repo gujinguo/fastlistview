@@ -44,67 +44,78 @@ WPF下的Listview，采用内存绘制，抛弃模板方式，但也支持简单
   </fast:GBListView.Columns>
 </fast:GBListView>
 
-:cs
-DataTable dtSource = null;
-  private void MainWindow_Loaded(object sender, RoutedEventArgs e)
-  {
-      dtSource = new DataTable();
-      for(int i = 0; i < 10; ++i)
-      {
-          dtSource.Columns.Add("Price" + i.ToString());
-      }
+:CS
 
-      for(int i = 0; i < 20; ++i)
-      {
-          DataRow drNew = dtSource.NewRow();
-          for(int j = 0; j < 10; ++j)
+public partial class MainWindow : Window
+{
+          public MainWindow()
           {
-              drNew[j] = "廊坊发展" + i.ToString() + "," + j.ToString();
+
+                    InitializeComponent();
+                    Loaded += MainWindow_Loaded;
+          }
+  
+          DataTable dtSource = null;
+          private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+          {
+              dtSource = new DataTable();
+
+              for(int i = 0; i < 10; ++i)
+              {
+                  dtSource.Columns.Add("Price" + i.ToString());
+              }
+
+              for(int i = 0; i < 20; ++i)
+              {
+                  DataRow drNew = dtSource.NewRow();
+                  for(int j = 0; j < 10; ++j)
+                  {
+                      drNew[j] = "廊坊发展" + i.ToString() + "," + j.ToString();
+                  }
+
+                  dtSource.Rows.Add(drNew);
+              }
+
+              FastGrid.TreeGridRow RootRow = new FastGrid.TreeGridRow();
+              RootRow.ChildRows = dtSource.Clone();
+              RootRow.ChildRows.ImportRow(dtSource.Rows[0]);
+              FastGrid.TreeGridRow Child1 = new FastGrid.TreeGridRow();
+              Child1.Level = 1;
+              Child1.ChildRows = dtSource;
+              RootRow.Nodes.Add(0, Child1);
+              DataTable dt1 = dtSource.Copy();
+              FastGrid.TreeGridRow Child2 = new FastGrid.TreeGridRow();
+              Child2.Level = 1;
+              Child2.ChildRows = dt1;
+              RootRow.ChildRows.ImportRow(dtSource.Rows[1]);
+              RootRow.Nodes.Add(1, Child2);
+
+              lvList.ShowInGroup = true;
+              lvList.AddEditColumn("Price1");
+              lvList.AddEditColumn("Price3");
+              lvList.ItemsSource = RootRow;
+              lvList.CellEdit += LvList_CellEdit;
           }
 
-          dtSource.Rows.Add(drNew);
-      }
-
-      FastGrid.TreeGridRow RootRow = new FastGrid.TreeGridRow();
-      RootRow.ChildRows = dtSource.Clone();
-      RootRow.ChildRows.ImportRow(dtSource.Rows[0]);
-      FastGrid.TreeGridRow Child1 = new FastGrid.TreeGridRow();
-      Child1.Level = 1;
-      Child1.ChildRows = dtSource;
-      RootRow.Nodes.Add(0, Child1);
-      DataTable dt1 = dtSource.Copy();
-      FastGrid.TreeGridRow Child2 = new FastGrid.TreeGridRow();
-      Child2.Level = 1;
-      Child2.ChildRows = dt1;
-      RootRow.ChildRows.ImportRow(dtSource.Rows[1]);
-      RootRow.Nodes.Add(1, Child2);
-
-      lvList.ShowInGroup = true;
-      lvList.AddEditColumn("Price1");
-      lvList.AddEditColumn("Price3");
-      lvList.ItemsSource = RootRow;
-      lvList.CellEdit += LvList_CellEdit;
-  }
-
-
-  private void LvList_CellEdit(object sender, FastGrid.GB_GridView.CellEditEventArgs e)
-  {
-      if (e.Action == FastGrid.GB_GridView.EditAction.EditCreate)
-      {
-         TextBox m_txtBox = new TextBox();
-          m_txtBox.Text = e.Value.ToString();
-          e.UI = m_txtBox;
-          m_txtBox.Focus();
-          m_txtBox.SelectAll();
-      }
-      else if (e.Action == FastGrid.GB_GridView.EditAction.ValueRetrieve)
-      {
-          if (e.UI != null)
+          private void LvList_CellEdit(object sender, FastGrid.GB_GridView.CellEditEventArgs e)
           {
-              TextBox tb = e.UI as TextBox;
-              if (tb != null)
-                  e.Value = tb.Text;
+              if (e.Action == FastGrid.GB_GridView.EditAction.EditCreate)
+              {
+                 TextBox m_txtBox = new TextBox();
+                  m_txtBox.Text = e.Value.ToString();
+                  e.UI = m_txtBox;
+                  m_txtBox.Focus();
+                  m_txtBox.SelectAll();
+              }
+              else if (e.Action == FastGrid.GB_GridView.EditAction.ValueRetrieve)
+              {
+                  if (e.UI != null)
+                  {
+                      TextBox tb = e.UI as TextBox;
+                      if (tb != null)
+                          e.Value = tb.Text;
+                  }
+              }
           }
-      }
   }
 
